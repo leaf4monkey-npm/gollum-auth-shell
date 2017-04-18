@@ -43,7 +43,6 @@ let server = http.createServer(function(req, res) {
     if (!checkAuth(req)) {
       return;
     }
-    console.log(url, headers);
     
     let gollumUrl = getGollumUrl(url);
 
