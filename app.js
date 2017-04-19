@@ -1,7 +1,7 @@
 let http = require('http');
 let fs = require('fs');
 let request = require('request');
-let gollumBase;
+let gollumBase = '';
 //let getGollumUrl = url => `http://localhost:9000${url}`;
 let getGollumUrl = url => `${gollumBase}${url}`;
 
