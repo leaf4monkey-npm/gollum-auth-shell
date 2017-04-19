@@ -1,7 +1,7 @@
 let http = require('http');
 let fs = require('fs');
 let request = require('request');
-let gollumBase = 'http://wiki.cb6bb44b5dbf0442f86b290c4b6b47cf5.cn-beijing.alicontainer.com';
+let gollumBase;
 //let getGollumUrl = url => `http://localhost:9000${url}`;
 let getGollumUrl = url => `${gollumBase}${url}`;
 
@@ -53,6 +53,7 @@ module.exports = function (options = {}) {
   if (options.checkAuth) {
     checkAuth = options.checkAuth;
   }
+  gollumBase = options.gollumBase;
   options.port = options.port || 8000;
   server.listen(options.port, function () {
       console.log('gollum-auth-shell started on http://localhost:${options.port}; press ctrl-c to terminate.')
