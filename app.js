@@ -71,7 +71,6 @@ module.exports = function (options = {}) {
     options.port = options.port || 8000;
     server.listen(options.port, function () {
         options.onReady && options.onReady();
-        console.log(`gollum-auth-shell started on http://localhost:${options.port}; press ctrl-c to terminate.`);
     });
     return server;
 };

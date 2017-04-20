@@ -14,6 +14,7 @@ const proxy = require('../app');
 describe('gollum-auth-shell', function () {
     const methods = ['post', 'get', 'put', 'delete'];
     const port = 8000, proxyUrl = `http://localhost:${port}`;
+    let proxyServer;
     let mockServer, mockPort = 9000, mockUrl = `http://localhost:${mockPort}`;
     before(function (done) {
         mockServer = http.createServer(function (req, res) {
@@ -23,7 +24,7 @@ describe('gollum-auth-shell', function () {
         mockServer.listen(mockPort, done);
     });
     before(function (done) {
-        proxy({
+        proxyServer = proxy({
             port,
             gollumBase: mockUrl,
             onReady: done,
@@ -45,6 +46,9 @@ describe('gollum-auth-shell', function () {
             //}
         });
     });
+
+    after((done) => proxyServer.close(done));
+    after((done) => mockServer.close(done));
 
     it('获得与路径匹配的响应', function (done) {
         let method = faker.random.arrayElement(methods), url = `/${method}`;
