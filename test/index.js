@@ -35,7 +35,8 @@ describe('gollum-auth-shell', function () {
                         //throw new Error('request method not match.');
                     }
                     next();
-                }]
+                }
+            ]
             //checkAuth: function ({url, method, headers}) {
             //    method = method.toLowerCase();
             //    if (!new RegExp(method).test(url)) {
