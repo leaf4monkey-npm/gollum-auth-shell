@@ -25,14 +25,23 @@ describe('gollum-auth-shell', function () {
     before(function (done) {
         proxy({
             port,
-            gollumBase: 'http://localhost:9000',
+            gollumBase: mockUrl,
             onReady: done,
-            checkAuth: function ({url, method, headers}) {
-                method = method.toLowerCase();
-                if (!new RegExp(method).test(url)) {
-                    throw new Error('request method not match.');
-                }
-            }
+            middlewares: [
+                function ({url, method, headers}, res, next) {
+                    method = method.toLowerCase();
+                    if (!new RegExp(method).test(url)) {
+                        return res.end(JSON.stringify({message: 'request method not match.'}));
+                        //throw new Error('request method not match.');
+                    }
+                    next();
+                }]
+            //checkAuth: function ({url, method, headers}) {
+            //    method = method.toLowerCase();
+            //    if (!new RegExp(method).test(url)) {
+            //        throw new Error('request method not match.');
+            //    }
+            //}
         });
     });
 
