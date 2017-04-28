@@ -13,17 +13,17 @@ const proxy = require('../app');
 
 describe('gollum-auth-shell', function () {
     const methods = ['post', 'get', 'put', 'delete'];
-    const port = 8000, proxyUrl = `http://localhost:${port}`;
+    const port = 65531, proxyUrl = `http://localhost:${port}`;
     let proxyServer;
-    let mockServer, mockPort = 9000, mockUrl = `http://localhost:${mockPort}`;
-    before(function (done) {
+    let mockServer, mockPort = 65532, mockUrl = `http://localhost:${mockPort}`;
+    before('initialize mock server:', function (done) {
         mockServer = http.createServer(function (req, res) {
             let {url, method} = req;
             res.end(`${method.toUpperCase()} - ${url}`);
         });
         mockServer.listen(mockPort, done);
     });
-    before(function (done) {
+    before('initialize proxy server:', function (done) {
         proxyServer = proxy({
             port,
             gollumBase: mockUrl,

@@ -26,31 +26,38 @@ let pipeResponse = function (stream, res) {
 
 let middlewares = [];
 
-let server = http.createServer(function (req, res) {
-    let currentIndex = 0;
-    log.debug(req.method, req.url);
-    log.debug('middlewares:', middlewares.length);
-    log.debug(middlewares);
-    let next = () => {
-        if (!middlewares[currentIndex]) {
-            return;
-        }
+let _server;
 
-        let middleware = middlewares[currentIndex++];
-        if (debugOn) {
-            try {
-                log.debug('calling into middleware currentIndex...');
-                middleware(req, res, next);
-            } catch (e) {
-                console.error(e.stack || e);
+let createServer = () =>
+    _server = http.createServer(function (req, res) {
+        let currentIndex = 0;
+        log.debug(req.method, req.url);
+        log.debug('middlewares:', middlewares.length);
+        log.debug(middlewares);
+        let next = () => {
+            if (!middlewares[currentIndex]) {
+                return;
             }
-        } else {
-            middleware(req, res, next);
-        }
-    };
 
-    next();
-});
+            let middleware = middlewares[currentIndex++];
+            if (debugOn) {
+                try {
+                    log.debug('calling into middleware currentIndex...');
+                    middleware(req, res, next);
+                } catch (e) {
+                    console.error(e.stack || e);
+                }
+            } else {
+                middleware(req, res, next);
+            }
+        };
+
+        next();
+    });
+
+let getServer = () => _server || createServer();
+
+let setServer = server => _server = server || createServer();
 
 let wrapAuthChecker = function (checkAuth) {
     return function (req, res, next) {
@@ -81,10 +88,15 @@ let checkMiddlewares = middlewares => middlewares.forEach(middleware => {
     }
 });
 
-module.exports = function (options = {}) {
+let createProxy = function (options = {}) {
     debugOn = options.debug;
 
     log.debug(options);
+
+    setServer(options.server);
+
+    options.addMiddlewares = options.addMiddlewares ||
+                            (_middlewares => middlewares.push(..._middlewares));
 
     if (options.checkAuth) {
         checkAuth = wrapAuthChecker(options.checkAuth);
@@ -93,15 +105,18 @@ module.exports = function (options = {}) {
 
     checkMiddlewares(options.middlewares);
 
-    middlewares = [
+    options.addMiddlewares([
         ...(options.middlewares || []),
         proxyResponse
-    ];
+    ]);
 
     gollumBase = options.gollumBase;
     options.port = options.port || 8000;
-    server.listen(options.port, function () {
+
+    getServer().listen(options.port, function () {
         options.onReady && options.onReady();
     });
-    return server;
+    return getServer();
 };
+
+module.exports = createProxy;
