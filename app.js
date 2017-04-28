@@ -43,12 +43,12 @@ let createServer = () =>
             if (debugOn) {
                 try {
                     log.debug('calling into middleware currentIndex...');
-                    middleware(req, res, next);
+                    middleware({req, res}, next);
                 } catch (e) {
                     console.error(e.stack || e);
                 }
             } else {
-                middleware(req, res, next);
+                middleware({req, res}, next);
             }
         };
 
@@ -76,7 +76,7 @@ let wrapAuthChecker = function (checkAuth) {
     };
 };
 
-let proxyResponse = function (req, res, next) {
+let proxyResponse = function ({req, res}, next) {
     let gollumUrl = getGollumUrl(req.url);
 
     pipeResponse(req.pipe(request[req.method.toLowerCase()](gollumUrl)), res);

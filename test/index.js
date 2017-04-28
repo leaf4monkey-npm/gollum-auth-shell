@@ -29,7 +29,7 @@ describe('gollum-auth-shell', function () {
             gollumBase: mockUrl,
             onReady: done,
             middlewares: [
-                function ({url, method, headers}, res, next) {
+                function ({req: {url, method, headers}, res}, next) {
                     method = method.toLowerCase();
                     if (!new RegExp(method).test(url)) {
                         return res.end(JSON.stringify({message: 'request method not match.'}));
