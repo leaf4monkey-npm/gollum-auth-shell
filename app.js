@@ -4,7 +4,11 @@ let gollumBase = '';
 //let getGollumUrl = url => `http://localhost:9000${url}`;
 let getGollumUrl = url => `${gollumBase}${url}`;
 
-let checkAuth = () => true;
+let checkAuth = () => true, debugOn;
+
+let log = {
+    debug: (...args) => debugOn && console.log(...args)
+};
 
 let pipeResponse = function (stream, res) {
     stream = stream.on('response', function (response) {
@@ -24,11 +28,25 @@ let middlewares = [];
 
 let server = http.createServer(function (req, res) {
     let currentIndex = 0;
+    log.debug(req.method, req.url);
+    log.debug('middlewares:', middlewares.length);
+    log.debug(middlewares);
     let next = () => {
         if (!middlewares[currentIndex]) {
             return;
         }
-        middlewares[currentIndex++](req, res, next);
+
+        let middleware = middlewares[currentIndex++];
+        if (debugOn) {
+            try {
+                log.debug('calling into middleware currentIndex...');
+                middleware(req, res, next);
+            } catch (e) {
+                console.error(e.stack || e);
+            }
+        } else {
+            middleware(req, res, next);
+        }
     };
 
     next();
@@ -57,11 +75,24 @@ let proxyResponse = function (req, res, next) {
     pipeResponse(req.pipe(request[req.method.toLowerCase()](gollumUrl)), res);
 };
 
+let checkMiddlewares = middlewares => middlewares.forEach(middleware => {
+    if (typeof middleware !== 'function') {
+        throw new TypeError('`options.middlewares` should be an array of function.');
+    }
+});
+
 module.exports = function (options = {}) {
+    debugOn = options.debug;
+
+    log.debug(options);
+
     if (options.checkAuth) {
         checkAuth = wrapAuthChecker(options.checkAuth);
         options.middlewares = [checkAuth, ...options.middlewares];
     }
+
+    checkMiddlewares(options.middlewares);
+
     middlewares = [
         ...(options.middlewares || []),
         proxyResponse
